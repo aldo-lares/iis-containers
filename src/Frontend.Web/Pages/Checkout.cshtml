@@ -1,0 +1,51 @@
+@page "/checkout"
+@model Frontend.Web.Pages.CheckoutModel
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+<h1>Checkout</h1>
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+@if (Model.Lines.Count == 0)
+{
+    <div class="alert alert-info">Your cart is empty. <a asp-page="/Index">Browse the catalog</a>.</div>
+}
+else
+{
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <form method="post" class="card card-body shadow-sm">
+                <div class="mb-3">
+                    <label class="form-label" asp-for="CustomerName">Name</label>
+                    <input class="form-control" asp-for="CustomerName" autocomplete="name" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" asp-for="CustomerEmail">Email</label>
+                    <input class="form-control" asp-for="CustomerEmail" type="email" autocomplete="email" />
+                </div>
+                <button class="btn btn-primary btn-lg" type="submit">Place order</button>
+            </form>
+        </div>
+        <div class="col-lg-5">
+            <div class="card card-body bg-light">
+                <h2 class="h4">Order summary</h2>
+                <ul class="list-group list-group-flush mb-3">
+                    @foreach (var line in Model.Lines)
+                    {
+                        <li class="list-group-item d-flex justify-content-between bg-light">
+                            <span>@line.Quantity × @line.Product.Name</span>
+                            <span>@line.LineTotal.ToString("C") MXN</span>
+                        </li>
+                    }
+                </ul>
+                <p class="d-flex justify-content-between"><span>Subtotal</span><strong>@Model.Subtotal.ToString("C") MXN</strong></p>
+                <p class="d-flex justify-content-between"><span>IVA 16%</span><strong>@Model.Tax.ToString("C") MXN</strong></p>
+                <p class="d-flex justify-content-between fs-4"><span>Total</span><strong>@Model.Total.ToString("C") MXN</strong></p>
+            </div>
+        </div>
+    </div>
+}

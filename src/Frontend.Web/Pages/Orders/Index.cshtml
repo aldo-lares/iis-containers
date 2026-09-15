@@ -1,0 +1,33 @@
+@page "/orders"
+@model Frontend.Web.Pages.Orders.IndexModel
+@{
+    ViewData["Title"] = "Recent orders";
+}
+
+<h1>Recent orders</h1>
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+else if (Model.Orders.Count == 0)
+{
+    <div class="alert alert-info">No orders yet.</div>
+}
+else
+{
+    <table class="table table-hover">
+        <thead><tr><th>Order</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th></tr></thead>
+        <tbody>
+        @foreach (var order in Model.Orders)
+        {
+            <tr>
+                <td><a asp-page="/Orders/Details" asp-route-id="@order.Id">@order.OrderNumber</a></td>
+                <td>@order.CustomerName</td>
+                <td>@order.CreatedAtUtc.LocalDateTime.ToString("g")</td>
+                <td>@order.Total.ToString("C") MXN</td>
+                <td>@order.Status</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

@@ -1,0 +1,31 @@
+@page "/orders/{id:guid}"
+@model Frontend.Web.Pages.Orders.DetailsModel
+@{
+    ViewData["Title"] = "Order confirmation";
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+else if (Model.Order is not null)
+{
+    <div class="alert alert-success">
+        <h1 class="h3">Order @Model.Order.OrderNumber placed</h1>
+        <p class="mb-0">Thank you, @Model.Order.CustomerName. Your simulated checkout completed.</p>
+    </div>
+    <table class="table">
+        <thead><tr><th>Product</th><th>Price</th><th>Qty</th><th>Total</th></tr></thead>
+        <tbody>
+        @foreach (var line in Model.Order.Lines)
+        {
+            <tr><td>@line.ProductName</td><td>@line.UnitPrice.ToString("C") MXN</td><td>@line.Quantity</td><td>@line.LineTotal.ToString("C") MXN</td></tr>
+        }
+        </tbody>
+    </table>
+    <div class="text-end">
+        <p>Subtotal: <strong>@Model.Order.Subtotal.ToString("C") MXN</strong></p>
+        <p>IVA 16%: <strong>@Model.Order.Tax.ToString("C") MXN</strong></p>
+        <p class="fs-4">Total: <strong>@Model.Order.Total.ToString("C") MXN</strong></p>
+    </div>
+}

@@ -1,0 +1,49 @@
+@page "/cart"
+@model Frontend.Web.Pages.CartModel
+@{
+    ViewData["Title"] = "Cart";
+}
+
+<h1>Your cart</h1>
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+@if (Model.Lines.Count == 0)
+{
+    <div class="alert alert-info">Your cart is empty. <a asp-page="/Index">Browse the catalog</a>.</div>
+}
+else
+{
+    <table class="table align-middle">
+        <thead><tr><th>Product</th><th>Price</th><th>Quantity</th><th>Total</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var line in Model.Lines)
+        {
+            <tr>
+                <td>@line.Product.Name<br /><span class="text-muted small">@line.Product.Sku</span></td>
+                <td>@line.Product.UnitPrice.ToString("C") MXN</td>
+                <td>
+                    <form method="post" asp-page-handler="Update" class="d-flex gap-2">
+                        <input type="hidden" name="productId" value="@line.Product.Id" />
+                        <input class="form-control" style="max-width: 7rem" type="number" min="0" name="quantity" value="@line.Quantity" />
+                        <button class="btn btn-outline-secondary" type="submit">Update</button>
+                    </form>
+                </td>
+                <td>@line.LineTotal.ToString("C") MXN</td>
+                <td>
+                    <form method="post" asp-page-handler="Remove">
+                        <input type="hidden" name="productId" value="@line.Product.Id" />
+                        <button class="btn btn-link text-danger" type="submit">Remove</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    <div class="d-flex justify-content-between align-items-center">
+        <p class="fs-4 fw-bold">Subtotal: @Model.Subtotal.ToString("C") MXN</p>
+        <a class="btn btn-primary btn-lg" asp-page="/Checkout">Checkout</a>
+    </div>
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "Name": "StorefrontPoC (all projects)",
+    "Projects": [
+      {
+        "Path": "src\\Catalog.Api\\Catalog.Api.csproj",
+        "Action": "Start",
+        "DebugTarget": "IIS Express"
+      },
+      {
+        "Path": "src\\Orders.Api\\Orders.Api.csproj",
+        "Action": "Start",
+        "DebugTarget": "IIS Express"
+      },
+      {
+        "Path": "src\\Frontend.Web\\Frontend.Web.csproj",
+        "Action": "Start",
+        "DebugTarget": "IIS Express"
+      }
+    ]
+  }
+]

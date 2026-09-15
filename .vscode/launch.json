@@ -1,0 +1,55 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Frontend.Web",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/src/Frontend.Web/bin/Debug/net8.0/Frontend.Web.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/Frontend.Web",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5000"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "Now listening on:\\s+(http://localhost:5000)"
+      }
+    },
+    {
+      "name": "Catalog.Api",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/src/Catalog.Api/bin/Debug/net8.0/Catalog.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/Catalog.Api",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5001"
+      }
+    },
+    {
+      "name": "Orders.Api",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/src/Orders.Api/bin/Debug/net8.0/Orders.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/Orders.Api",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5002"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "StorefrontPoC (all projects)",
+      "configurations": ["Catalog.Api", "Orders.Api", "Frontend.Web"],
+      "stopAll": true
+    }
+  ]
+}

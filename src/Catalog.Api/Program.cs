@@ -216,7 +216,7 @@ public sealed class CorrelationIdMiddleware(RequestDelegate next, ILogger<Correl
         context.Response.Headers[HeaderName] = correlationId;
         using (logger.BeginScope(new Dictionary<string, object> { ["CorrelationId"] = correlationId }))
         {
-            logger.LogInformation("Handling {Method} {Path} with correlation id {CorrelationId}", context.Request.Method, context.Request.Path, correlationId);
+            logger.LogInformation("Handling request with correlation id {CorrelationId}", correlationId);
             await next(context);
         }
     }

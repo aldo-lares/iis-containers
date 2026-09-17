@@ -62,7 +62,10 @@ services:
     # Single replica only: the cart is kept in in-memory session state
     # (AddDistributedMemoryCache in Program.cs). Horizontal scaling of this
     # service requires a distributed cache/session store, which is out of
-    # scope for this issue.
+    # scope for this issue. `deploy.replicas` below documents the intended
+    # replica count; note it is honored by `docker stack deploy` (Swarm) but
+    # ignored by `docker compose up`, which will still allow
+    # `docker compose up --scale frontend=N` — do not scale this service.
     deploy:
       replicas: 1
     healthcheck:

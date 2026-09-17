@@ -4,6 +4,8 @@ set -u
 FrontendUrl="http://localhost:5000"
 CatalogUrl="http://localhost:5001"
 OrdersUrl="http://localhost:5002"
+TaxRate="0.16"
+Tolerance="0.01"
 
 fail() {
   echo "Smoke test failed: $*" >&2
@@ -13,6 +15,8 @@ fail() {
 usage() {
   cat >&2 <<USAGE
 Usage: $0 [-FrontendUrl URL] [-CatalogUrl URL] [-OrdersUrl URL]
+       $0 [--frontend-url URL] [--catalog-url URL] [--orders-url URL]
+       $0 [-h|--help]
 USAGE
 }
 
@@ -78,7 +82,7 @@ assert_status "$CatalogUrl/healthz" "200"
 assert_status "$OrdersUrl/healthz" "200"
 
 products_json="$(curl --silent --show-error --fail "$CatalogUrl/api/products")" || fail "GET $CatalogUrl/api/products failed"
-product_count="$(printf '%s' "$products_json" | grep -o '"id"' | wc -l | tr -d ' ')"
+product_count="$(printf '%s' "$products_json" | sed 's/},{/}\n{/g' | grep -c '"stockQuantity"')"
 [ "$product_count" -ge 12 ] || fail "Expected at least 12 products, found $product_count"
 
 product_line="$(printf '%s' "$products_json" | sed 's/},{/}\n{/g' | awk -F'"stockQuantity":' 'NF > 1 { split($2, a, /[^0-9]/); if (a[1] >= 2) { print; exit } }')"
@@ -105,11 +109,11 @@ total="$(printf '%s' "$order_json" | extract_json_number total)"
 [ -n "$tax" ] || fail "Could not parse order tax"
 [ -n "$total" ] || fail "Could not parse order total"
 
-awk -v subtotal="$subtotal" -v tax="$tax" -v total="$total" 'BEGIN { expected = subtotal + tax; diff = total - expected; if (diff < 0) diff = -diff; exit(diff < 0.01 ? 0 : 1) }' \
+awk -v subtotal="$subtotal" -v tax="$tax" -v total="$total" -v tolerance="$Tolerance" 'BEGIN { expected = subtotal + tax; diff = total - expected; if (diff < 0) diff = -diff; exit(diff < tolerance ? 0 : 1) }' \
   || fail "Order total $total did not equal subtotal $subtotal plus tax $tax"
-awk -v subtotal="$subtotal" -v unitPrice="$unit_price" 'BEGIN { expected = unitPrice * 2; diff = subtotal - expected; if (diff < 0) diff = -diff; exit(diff < 0.01 ? 0 : 1) }' \
+awk -v subtotal="$subtotal" -v unitPrice="$unit_price" -v tolerance="$Tolerance" 'BEGIN { expected = unitPrice * 2; diff = subtotal - expected; if (diff < 0) diff = -diff; exit(diff < tolerance ? 0 : 1) }' \
   || fail "Order subtotal $subtotal did not equal unit price $unit_price times 2"
-awk -v subtotal="$subtotal" -v tax="$tax" 'BEGIN { expected = sprintf("%.2f", subtotal * 0.16); diff = tax - expected; if (diff < 0) diff = -diff; exit(diff < 0.01 ? 0 : 1) }' \
+awk -v subtotal="$subtotal" -v tax="$tax" -v taxRate="$TaxRate" -v tolerance="$Tolerance" 'BEGIN { expected = sprintf("%.2f", subtotal * taxRate); diff = tax - expected; if (diff < 0) diff = -diff; exit(diff < tolerance ? 0 : 1) }' \
   || fail "Order tax $tax did not equal 16% of subtotal $subtotal"
 
 after_product_json="$(curl --silent --show-error --fail "$CatalogUrl/api/products/$product_id")" || fail "GET $CatalogUrl/api/products/$product_id failed after order"

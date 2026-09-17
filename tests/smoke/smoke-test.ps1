@@ -5,6 +5,8 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$TaxRate = 0.16
+$Tolerance = 0.01
 
 function Fail([string]$Message) {
     Write-Error "Smoke test failed: $Message"
@@ -73,18 +75,18 @@ if ($orderResponse.StatusCode -ne 201) {
 
 $order = $orderResponse.Content | ConvertFrom-Json
 $expectedSubtotal = [decimal]$product.unitPrice * 2
-$expectedTax = [Math]::Round($expectedSubtotal * 0.16, 2, [MidpointRounding]::AwayFromZero)
+$expectedTax = [Math]::Round($expectedSubtotal * $TaxRate, 2, [MidpointRounding]::AwayFromZero)
 $expectedTotal = $expectedSubtotal + $expectedTax
 
-if ([Math]::Abs([decimal]$order.subtotal - $expectedSubtotal) -ge 0.01) {
+if ([Math]::Abs([decimal]$order.subtotal - $expectedSubtotal) -ge $Tolerance) {
     Fail "Order subtotal $($order.subtotal) did not equal unit price $($product.unitPrice) times 2"
 }
 
-if ([Math]::Abs([decimal]$order.tax - $expectedTax) -ge 0.01) {
+if ([Math]::Abs([decimal]$order.tax - $expectedTax) -ge $Tolerance) {
     Fail "Order tax $($order.tax) did not equal 16% of subtotal $expectedSubtotal"
 }
 
-if ([Math]::Abs([decimal]$order.total - ([decimal]$order.subtotal + [decimal]$order.tax)) -ge 0.01 -or [Math]::Abs([decimal]$order.total - $expectedTotal) -ge 0.01) {
+if ([Math]::Abs([decimal]$order.total - ([decimal]$order.subtotal + [decimal]$order.tax)) -ge $Tolerance -or [Math]::Abs([decimal]$order.total - $expectedTotal) -ge $Tolerance) {
     Fail "Order total $($order.total) did not equal subtotal plus 16% tax"
 }
 

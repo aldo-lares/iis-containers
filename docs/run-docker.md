@@ -8,7 +8,7 @@ main [README.md](../README.md) continues to work unchanged and is not affected b
 
 The `Containerfile` in each project folder is a plain OCI multi-stage build with no
 Docker-proprietary (BuildKit-only) syntax, so it can be built with either `docker build` or
-`podman build`. A byte-identical `Dockerfile` sits next to each `Containerfile` so both
+`podman build`. A `Dockerfile` symlink sits next to each `Containerfile` so both
 tools find their conventional filename.
 
 ## Prerequisites

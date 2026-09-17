@@ -82,7 +82,7 @@ If a project fails to start because a port is already in use, stop the process l
 
 StorefrontPoC can also run as three containers with Docker Compose, alongside (not instead
 of) the local F5 mode described above. Each project has a `Containerfile` (plain OCI, no
-Docker-proprietary build syntax) with a byte-identical `Dockerfile` copy, and
+Docker-proprietary build syntax) with a `Dockerfile` symlink pointing at it, and
 `docker-compose.yml` at the repository root wires the three services together with
 healthchecks and a named volume for SQLite data. See
 [docs/run-docker.md](docs/run-docker.md) for the build/run commands, port map, smoke test

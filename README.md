@@ -2,6 +2,16 @@
 
 StorefrontPoC is a .NET 8 proof-of-concept online store optimized for local developer experience. Clone the repository, open the solution in Visual Studio 2022 or VS Code, press F5/Run, and the frontend plus both backend APIs start on fixed HTTP ports with no Docker, external database, cloud resource, secrets, npm install, or manual setup.
 
+## Execution modes
+
+| Mode | Status | Notes |
+| --- | --- | --- |
+| Local | Available | Visual Studio 2022, VS Code, or `dotnet run` on fixed local HTTP ports |
+| Docker | Not available yet | Planned for a later issue |
+| Podman | Not available yet | Planned for a later issue |
+| Local cluster | Not available yet | Planned for a later issue |
+| AKS | Not available yet | Planned for a later issue |
+
 ## Architecture
 
 ```text
@@ -15,26 +25,14 @@ StorefrontPoC is a .NET 8 proof-of-concept online store optimized for local deve
 
 All service-to-service traffic uses HTTP to avoid development-certificate friction. SQLite database files are created automatically under the user's local application data folder on first run by `EnsureCreated`, and seed data is idempotent.
 
-## Prerequisites
+## Running locally
+
+### Prerequisites
 
 - .NET 8 SDK
 - Visual Studio 2022, or VS Code with the C# Dev Kit extension
 
-## Run with Visual Studio 2022
-
-1. Open `StorefrontPoC.sln`.
-2. Select the `StorefrontPoC (all projects)` solution launch profile if prompted.
-3. Press F5. Visual Studio starts all three projects with IIS Express.
-4. Browse `http://localhost:5000` for the storefront.
-
-## Run with VS Code
-
-1. Open the repository folder.
-2. Go to Run and Debug.
-3. Select `StorefrontPoC (all projects)`.
-4. Press F5. The compound launch starts Catalog.Api, Orders.Api, and Frontend.Web.
-
-## Port map
+### Port map
 
 | Project | URL | Purpose |
 | --- | --- | --- |
@@ -42,7 +40,43 @@ All service-to-service traffic uses HTTP to avoid development-certificate fricti
 | Catalog.Api | `http://localhost:5001` | Product catalog, stock reserve/release, Swagger in Development |
 | Orders.Api | `http://localhost:5002` | Order placement, checkout orchestration, Swagger in Development |
 
-Health endpoints are available at `/healthz` on all three projects. Orders.Api health checks also ping Catalog.Api.
+Health endpoints are available at `/healthz` on all three projects. Swagger UI is available at `/swagger` for Catalog.Api and Orders.Api in Development.
+
+### Run with Visual Studio 2022
+
+1. Open `StorefrontPoC.sln`.
+2. Select the `StorefrontPoC (all projects)` solution launch profile if prompted.
+3. Press F5. Visual Studio starts all three projects with IIS Express.
+4. Browse `http://localhost:5000` for the storefront.
+
+### Run with VS Code
+
+1. Open the repository folder.
+2. Go to Run and Debug.
+3. Select `StorefrontPoC (all projects)`.
+4. Press F5. The compound launch starts Catalog.Api, Orders.Api, and Frontend.Web.
+
+### Smoke test
+
+Start all three projects first, then run one of:
+
+```bash
+./tests/smoke/smoke-test.sh
+```
+
+```powershell
+./tests/smoke/smoke-test.ps1
+```
+
+Both scripts default to the local ports above and also accept `-FrontendUrl`, `-CatalogUrl`, and `-OrdersUrl` when testing another local endpoint set.
+
+### Configuration overrides
+
+Local defaults are defined in `appsettings.Development.json` and launch profiles. When needed, standard ASP.NET Core environment variables can override service URLs (`Services__CatalogApi`, `Services__OrdersApi`), SQLite database locations (`ConnectionStrings__CatalogDb`, `ConnectionStrings__OrdersDb`), and listening URLs (`ASPNETCORE_URLS`).
+
+### Troubleshooting
+
+If a project fails to start because a port is already in use, stop the process listening on `5000`, `5001`, or `5002`, then press F5/Run again. The local launch profiles intentionally keep fixed HTTP ports so the projects can find each other without manual setup.
 
 ## API contracts
 

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Shared.Contracts;
 
@@ -12,12 +13,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("Frontend", policy => policy.WithOrigins("http://localhost:5000").AllowAnyHeader().AllowAnyMethod());
+    options.AddPolicy("Frontend", policy => policy.WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? []).AllowAnyHeader().AllowAnyMethod());
 });
 
-var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "StorefrontPoC", "Catalog.Api", "catalog.db");
-Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
-builder.Services.AddDbContext<CatalogDbContext>(options => options.UseSqlite($"Data Source={dbPath}"));
+var catalogConnectionString = GetSqliteConnectionString(builder.Configuration, "CatalogDb", "Catalog.Api", "catalog.db");
+builder.Services.AddDbContext<CatalogDbContext>(options => options.UseSqlite(catalogConnectionString));
 
 var app = builder.Build();
 
@@ -140,6 +140,35 @@ app.MapPost("/api/stock/release", async (StockReleaseRequest request, CatalogDbC
 });
 
 app.Run();
+
+static string GetSqliteConnectionString(IConfiguration configuration, string name, string serviceFolder, string fileName)
+{
+    var connectionString = configuration.GetConnectionString(name);
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "StorefrontPoC", serviceFolder, fileName);
+        Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
+        return $"Data Source={dbPath}";
+    }
+
+    EnsureSqliteDataSourceDirectory(connectionString);
+    return connectionString;
+}
+
+static void EnsureSqliteDataSourceDirectory(string connectionString)
+{
+    var dataSource = new SqliteConnectionStringBuilder(connectionString).DataSource;
+    if (string.IsNullOrWhiteSpace(dataSource) || dataSource == ":memory:" || dataSource.StartsWith("file:", StringComparison.OrdinalIgnoreCase))
+    {
+        return;
+    }
+
+    var directory = Path.GetDirectoryName(Path.GetFullPath(dataSource));
+    if (!string.IsNullOrWhiteSpace(directory))
+    {
+        Directory.CreateDirectory(directory);
+    }
+}
 
 static IResult? ValidateItems(IReadOnlyList<CartItemDto> items)
 {

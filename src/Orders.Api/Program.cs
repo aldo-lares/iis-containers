@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Shared.Contracts;
 
@@ -13,19 +14,18 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("Frontend", policy => policy.WithOrigins("http://localhost:5000").AllowAnyHeader().AllowAnyMethod());
+    options.AddPolicy("Frontend", policy => policy.WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? []).AllowAnyHeader().AllowAnyMethod());
 });
 
-var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "StorefrontPoC", "Orders.Api", "orders.db");
-Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
-builder.Services.AddDbContext<OrdersDbContext>(options => options.UseSqlite($"Data Source={dbPath}"));
+var ordersConnectionString = GetSqliteConnectionString(builder.Configuration, "OrdersDb", "Orders.Api", "orders.db");
+builder.Services.AddDbContext<OrdersDbContext>(options => options.UseSqlite(ordersConnectionString));
 builder.Services.AddScoped<IOrderRepository, EfOrderRepository>();
 builder.Services.AddScoped<CheckoutService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<CorrelationIdHandler>();
 builder.Services.AddHttpClient<ICatalogClient, CatalogApiClient>(client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["Services:CatalogApi"] ?? "http://localhost:5001");
+    client.BaseAddress = new Uri(builder.Configuration.GetRequiredSection("Services:CatalogApi").Value!);
 }).AddHttpMessageHandler<CorrelationIdHandler>();
 
 var app = builder.Build();
@@ -101,6 +101,35 @@ app.MapGet("/api/orders/{id:guid}", async (Guid id, IOrderRepository repository)
 app.MapGet("/api/orders", async (IOrderRepository repository) => Results.Ok((await repository.GetRecentAsync()).Select(order => order.ToDto())));
 
 app.Run();
+
+static string GetSqliteConnectionString(IConfiguration configuration, string name, string serviceFolder, string fileName)
+{
+    var connectionString = configuration.GetConnectionString(name);
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "StorefrontPoC", serviceFolder, fileName);
+        Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
+        return $"Data Source={dbPath}";
+    }
+
+    EnsureSqliteDataSourceDirectory(connectionString);
+    return connectionString;
+}
+
+static void EnsureSqliteDataSourceDirectory(string connectionString)
+{
+    var dataSource = new SqliteConnectionStringBuilder(connectionString).DataSource;
+    if (string.IsNullOrWhiteSpace(dataSource) || dataSource == ":memory:" || dataSource.StartsWith("file:", StringComparison.OrdinalIgnoreCase))
+    {
+        return;
+    }
+
+    var directory = Path.GetDirectoryName(Path.GetFullPath(dataSource));
+    if (!string.IsNullOrWhiteSpace(directory))
+    {
+        Directory.CreateDirectory(directory);
+    }
+}
 
 public sealed class OrdersDbContext(DbContextOptions<OrdersDbContext> options) : DbContext(options)
 {

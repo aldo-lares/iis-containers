@@ -1,0 +1,32 @@
+# Build artifacts
+**/bin/
+**/obj/
+
+# IDE / tooling
+**/.vs/
+.vscode/
+.idea/
+
+# Version control
+.git/
+.gitignore
+
+# Tests and QA artifacts
+tests/
+**/TestResults/
+**/*.trx
+**/coverage/
+**/*.coverage
+**/*.coveragexml
+
+# Misc artifacts
+**/logs/
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Docs (not needed inside the image)
+docs/
+README.md

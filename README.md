@@ -7,7 +7,7 @@ StorefrontPoC is a .NET 8 proof-of-concept online store optimized for local deve
 | Mode | Status | Notes |
 | --- | --- | --- |
 | Local | Available | Visual Studio 2022, VS Code, or `dotnet run` on fixed local HTTP ports |
-| Docker | Not available yet | Planned for a later issue |
+| Docker | Available | `docker compose up --build`; see [docs/run-docker.md](docs/run-docker.md) |
 | Podman | Not available yet | Planned for a later issue |
 | Local cluster | Not available yet | Planned for a later issue |
 | AKS | Not available yet | Planned for a later issue |
@@ -77,6 +77,16 @@ Local defaults are defined in `appsettings.Development.json` and launch profiles
 ### Troubleshooting
 
 If a project fails to start because a port is already in use, stop the process listening on `5000`, `5001`, or `5002`, then press F5/Run again. The local launch profiles intentionally keep fixed HTTP ports so the projects can find each other without manual setup.
+
+## Docker
+
+StorefrontPoC can also run as three containers with Docker Compose, alongside (not instead
+of) the local F5 mode described above. Each project has a `Containerfile` (plain OCI, no
+Docker-proprietary build syntax) with a `Dockerfile` symlink pointing at it, and
+`docker-compose.yml` at the repository root wires the three services together with
+healthchecks and a named volume for SQLite data. See
+[docs/run-docker.md](docs/run-docker.md) for the build/run commands, port map, smoke test
+instructions, log inspection, and volume reset/clean-up steps.
 
 ## API contracts
 

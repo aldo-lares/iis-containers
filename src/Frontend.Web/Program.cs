@@ -9,6 +9,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
 builder.Services.AddProblemDetails();
+// The cart is kept in in-memory session state (AddDistributedMemoryCache stores
+// session data in this process's memory, not in an external cache). This is why
+// docker-compose.yml pins the frontend service to a single replica: running more
+// than one instance would split cart state across containers. Horizontal scaling
+// of this service requires swapping in a real distributed cache/session store,
+// which is out of scope for the Docker execution-mode issue.
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {

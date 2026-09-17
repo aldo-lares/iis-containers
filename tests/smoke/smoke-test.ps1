@@ -1,3 +1,5 @@
+﻿#Requires -Version 7.0
+
 param(
     [string]$FrontendUrl = "http://localhost:5000",
     [string]$CatalogUrl = "http://localhost:5001",
@@ -9,7 +11,7 @@ $TaxRate = 0.16
 $Tolerance = 0.01
 
 function Fail([string]$Message) {
-    Write-Error "Smoke test failed: $Message"
+    [Console]::Error.WriteLine("Smoke test failed: $Message")
     exit 1
 }
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -u
+set -euo pipefail
 
 FrontendUrl="http://localhost:5000"
 CatalogUrl="http://localhost:5001"
@@ -82,7 +82,7 @@ assert_status "$CatalogUrl/healthz" "200"
 assert_status "$OrdersUrl/healthz" "200"
 
 products_json="$(curl --silent --show-error --fail "$CatalogUrl/api/products")" || fail "GET $CatalogUrl/api/products failed"
-product_count="$(printf '%s' "$products_json" | sed 's/},{/}\n{/g' | grep -c '"stockQuantity"')"
+product_count="$(printf '%s' "$products_json" | sed 's/},{/}\n{/g' | awk '/"stockQuantity"/ { count++ } END { print count + 0 }')"
 [ "$product_count" -ge 12 ] || fail "Expected at least 12 products, found $product_count"
 
 product_line="$(printf '%s' "$products_json" | sed 's/},{/}\n{/g' | awk -F'"stockQuantity":' 'NF > 1 { split($2, a, /[^0-9]/); if (a[1] >= 2) { print; exit } }')"

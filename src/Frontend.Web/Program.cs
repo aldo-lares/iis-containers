@@ -21,11 +21,11 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<CorrelationIdHandler>();
 builder.Services.AddHttpClient<CatalogApiClient>(client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration.GetRequiredSection("Services:CatalogApi").Value!);
+    client.BaseAddress = new Uri(builder.Configuration["Services:CatalogApi"] ?? StorefrontDefaults.CatalogApiUrl);
 }).AddHttpMessageHandler<CorrelationIdHandler>();
 builder.Services.AddHttpClient<OrdersApiClient>(client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration.GetRequiredSection("Services:OrdersApi").Value!);
+    client.BaseAddress = new Uri(builder.Configuration["Services:OrdersApi"] ?? StorefrontDefaults.OrdersApiUrl);
 }).AddHttpMessageHandler<CorrelationIdHandler>();
 
 var app = builder.Build();

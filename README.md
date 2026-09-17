@@ -68,7 +68,7 @@ Start all three projects first, then run one of:
 ./tests/smoke/smoke-test.ps1
 ```
 
-Both scripts default to the local ports above and also accept `-FrontendUrl`, `-CatalogUrl`, and `-OrdersUrl` when testing another local endpoint set.
+Both scripts default to the local ports above and also accept `-FrontendUrl`, `-CatalogUrl`, and `-OrdersUrl` when testing another local endpoint set. The PowerShell script requires PowerShell 7.
 
 ### Configuration overrides
 

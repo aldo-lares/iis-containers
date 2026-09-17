@@ -13,19 +13,19 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("Frontend", policy => policy.WithOrigins("http://localhost:5000").AllowAnyHeader().AllowAnyMethod());
+    var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+    options.AddPolicy("Frontend", policy => policy.WithOrigins(allowedOrigins is { Length: > 0 } ? allowedOrigins : [StorefrontDefaults.FrontendUrl]).AllowAnyHeader().AllowAnyMethod());
 });
 
-var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "StorefrontPoC", "Orders.Api", "orders.db");
-Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
-builder.Services.AddDbContext<OrdersDbContext>(options => options.UseSqlite($"Data Source={dbPath}"));
+var ordersConnectionString = SqliteDatabaseConfiguration.GetConnectionString(builder.Configuration.GetConnectionString("OrdersDb"), "Orders.Api", "orders.db");
+builder.Services.AddDbContext<OrdersDbContext>(options => options.UseSqlite(ordersConnectionString));
 builder.Services.AddScoped<IOrderRepository, EfOrderRepository>();
 builder.Services.AddScoped<CheckoutService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<CorrelationIdHandler>();
 builder.Services.AddHttpClient<ICatalogClient, CatalogApiClient>(client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["Services:CatalogApi"] ?? "http://localhost:5001");
+    client.BaseAddress = new Uri(builder.Configuration["Services:CatalogApi"] ?? StorefrontDefaults.CatalogApiUrl);
 }).AddHttpMessageHandler<CorrelationIdHandler>();
 
 var app = builder.Build();

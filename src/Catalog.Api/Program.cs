@@ -12,12 +12,12 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("Frontend", policy => policy.WithOrigins("http://localhost:5000").AllowAnyHeader().AllowAnyMethod());
+    var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+    options.AddPolicy("Frontend", policy => policy.WithOrigins(allowedOrigins is { Length: > 0 } ? allowedOrigins : [StorefrontDefaults.FrontendUrl]).AllowAnyHeader().AllowAnyMethod());
 });
 
-var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "StorefrontPoC", "Catalog.Api", "catalog.db");
-Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
-builder.Services.AddDbContext<CatalogDbContext>(options => options.UseSqlite($"Data Source={dbPath}"));
+var catalogConnectionString = SqliteDatabaseConfiguration.GetConnectionString(builder.Configuration.GetConnectionString("CatalogDb"), "Catalog.Api", "catalog.db");
+builder.Services.AddDbContext<CatalogDbContext>(options => options.UseSqlite(catalogConnectionString));
 
 var app = builder.Build();
 

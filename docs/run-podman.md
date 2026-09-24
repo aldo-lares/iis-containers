@@ -132,7 +132,7 @@ podman compose down -v
 Native pod:
 
 ```bash
-podman play kube --down deploy/podman/storefront-pod.yaml
+podman kube down deploy/podman/storefront-pod.yaml
 podman volume rm storefront-data
 ```
 

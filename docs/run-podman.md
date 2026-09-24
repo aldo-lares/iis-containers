@@ -79,6 +79,8 @@ The compose path uses two named volumes. Their mounts include `:Z`, so Podman ap
 SELinux label on enforcing hosts. The native pod path uses one PVC-backed named volume for the
 two differently named SQLite files. Podman manages its SELinux label automatically because
 Kubernetes `volumeMounts` do not support a `:Z` suffix.
+Both pod mounts expose that volume's root, so `catalog.db` and `orders.db` are stored side by
+side; their distinct basenames also keep SQLite journal and WAL files separate.
 
 The Containerfiles run as the non-root `$APP_UID`. For Compose, their pre-created data
 directories give new named volumes the required ownership. For the pod path, PVC annotations

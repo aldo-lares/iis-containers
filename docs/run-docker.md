@@ -60,6 +60,8 @@ container addresses instead of `localhost`.
 Each API stores its SQLite database file on a dedicated named volume
 (`catalog-data`, `orders-data`) mounted at a writable path inside the container. Data
 survives `docker compose restart` and `docker compose down` (without `-v`).
+The mounts use the `:Z` private relabel option for compatibility with SELinux-enforcing
+hosts; it has no labeling effect on hosts where SELinux is unavailable.
 
 To reset the data to a clean seeded state:
 

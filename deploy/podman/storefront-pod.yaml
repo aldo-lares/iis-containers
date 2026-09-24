@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: storefront-data
+  annotations:
+    volume.podman.io/uid: "1654"
+    volume.podman.io/gid: "1654"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: storefrontpoc
+spec:
+  containers:
+    - name: catalog-api
+      image: localhost/storefrontpoc-catalog-api:latest
+      imagePullPolicy: Never
+      ports:
+        - containerPort: 8081
+          hostPort: 5001
+      env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Development
+        - name: ASPNETCORE_URLS
+          value: http://+:8081
+        - name: ConnectionStrings__CatalogDb
+          value: Data Source=/data/catalog-api/catalog.db
+      volumeMounts:
+        - name: storefront-data
+          mountPath: /data/catalog-api
+    - name: orders-api
+      image: localhost/storefrontpoc-orders-api:latest
+      imagePullPolicy: Never
+      ports:
+        - containerPort: 8082
+          hostPort: 5002
+      env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Development
+        - name: ASPNETCORE_URLS
+          value: http://+:8082
+        - name: ConnectionStrings__OrdersDb
+          value: Data Source=/data/orders-api/orders.db
+        - name: Services__CatalogApi
+          value: http://localhost:8081
+      volumeMounts:
+        - name: storefront-data
+          mountPath: /data/orders-api
+    - name: frontend
+      image: localhost/storefrontpoc-frontend:latest
+      imagePullPolicy: Never
+      ports:
+        - containerPort: 8080
+          hostPort: 5000
+      env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Development
+        - name: ASPNETCORE_URLS
+          value: http://+:8080
+        - name: Services__CatalogApi
+          value: http://localhost:8081
+        - name: Services__OrdersApi
+          value: http://localhost:8082
+  volumes:
+    - name: storefront-data
+      persistentVolumeClaim:
+        claimName: storefront-data

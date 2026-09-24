@@ -15,7 +15,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__CatalogDb: "Data Source=/data/catalog-api/catalog.db"
     volumes:
-      - catalog-data:/data/catalog-api
+      - catalog-data:/data/catalog-api:Z
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
       interval: 5s
@@ -36,7 +36,7 @@ services:
       ConnectionStrings__OrdersDb: "Data Source=/data/orders-api/orders.db"
       Services__CatalogApi: "http://catalog-api:8080"
     volumes:
-      - orders-data:/data/orders-api
+      - orders-data:/data/orders-api:Z
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
       interval: 5s

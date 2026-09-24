@@ -8,7 +8,7 @@ StorefrontPoC is a .NET 8 proof-of-concept online store optimized for local deve
 | --- | --- | --- |
 | Local | Available | Visual Studio 2022, VS Code, or `dotnet run` on fixed local HTTP ports |
 | Docker | Available | `docker compose up --build`; see [docs/run-docker.md](docs/run-docker.md) |
-| Podman | Not available yet | Planned for a later issue |
+| Podman | Available | `podman compose up --build` or `podman play kube`; see [docs/run-podman.md](docs/run-podman.md) |
 | Local cluster | Not available yet | Planned for a later issue |
 | AKS | Not available yet | Planned for a later issue |
 
@@ -87,6 +87,13 @@ Docker-proprietary build syntax) with a `Dockerfile` symlink pointing at it, and
 healthchecks and a named volume for SQLite data. See
 [docs/run-docker.md](docs/run-docker.md) for the build/run commands, port map, smoke test
 instructions, log inspection, and volume reset/clean-up steps.
+
+## Podman
+
+The same three Containerfiles and `docker-compose.yml` can be used rootless with Podman. A
+Podman-native `podman play kube` path is also available. See
+[docs/run-podman.md](docs/run-podman.md) for both workflows and
+[deploy/podman/README.md](deploy/podman/README.md) for observed compatibility differences.
 
 ## API contracts
 

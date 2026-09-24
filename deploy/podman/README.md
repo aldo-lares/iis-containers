@@ -24,7 +24,9 @@ and 8082 respectively. Host ports remain 5000, 5001, and 5002.
 ## Persistent volume permissions
 
 The Kubernetes YAML uses one Podman-managed persistent volume claim for both distinct SQLite
-files. PVC annotations initialize the volume for the image's non-root `$APP_UID` (1654).
+files. Both mounts intentionally expose the volume root, while the `catalog.db` and
+`orders.db` filenames prevent collisions. PVC annotations initialize the volume for the
+image's non-root `$APP_UID` (1654).
 Podman manages the named volume's SELinux label; Kubernetes `volumeMounts` have no `:Z` suffix
 syntax.
 

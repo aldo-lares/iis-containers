@@ -37,5 +37,5 @@ a bind mount must also be privately relabeled (the equivalent of `:Z`) on an SEL
 ## Compose behavior
 
 Compose health-based `depends_on` ordering is not represented in the pod YAML. The three
-processes start together, and service calls occur only after requests arrive. Health endpoints
-remain available on every published host port.
+processes start together without readiness or liveness probes, and service calls occur only
+after requests arrive. The `/healthz` endpoints remain available on every published host port.
